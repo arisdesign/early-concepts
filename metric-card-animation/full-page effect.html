@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metric Card Animation - Full Page Effect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': {
+                            500: '#007CFF',
+                            600: '#0063CC',
+                            700: '#004A99',
+                        },
+                        'success-green': {
+                            50: '#ECFDF5',
+                            500: '#10B981',
+                            600: '#059669',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    keyframes: {
+                        'fade-in-up': {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        'count-up': {
+                            '0%': { opacity: '0', transform: 'scale(0.5)' },
+                            '50%': { transform: 'scale(1.1)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        },
+                        'progress-fill': {
+                            '0%': { width: '0%' },
+                            '100%': { width: 'var(--progress-width)' }
+                        },
+                        'badge-pop': {
+                            '0%': { opacity: '0', transform: 'scale(0) rotate(-12deg)' },
+                            '60%': { transform: 'scale(1.2) rotate(3deg)' },
+                            '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' }
+                        },
+                        'shimmer': {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
+                        },
+                        'pulse-soft': {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.7' }
+                        },
+                        'slide-in-right': {
+                            '0%': { opacity: '0', transform: 'translateX(20px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' }
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
+                        'count-up': 'count-up 0.8s ease-out forwards',
+                        'progress-fill': 'progress-fill 1.2s ease-out forwards',
+                        'badge-pop': 'badge-pop 0.5s ease-out forwards',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+                        'slide-in-right': 'slide-in-right 0.5s ease-out forwards'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        /* Custom animation delays */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+        .delay-600 { animation-delay: 600ms; }
+        .delay-700 { animation-delay: 700ms; }
+        
+        /* Initial hidden state for animated elements */
+        .animate-on-load {
+            opacity: 0;
+        }
+        
+        /* Progress bar custom property for animation */
+        .progress-bar {
+            --progress-width: 60%;
+        }
+        
+        /* Shimmer effect for progress bar */
+        .shimmer-effect {
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255,255,255,0.4) 50%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+        }
+        
+        /* Number counter animation via JS */
+        .number-counter {
+            display: inline-block;
+            min-width: 1ch;
+        }
+        
+        /* Celebration state */
+        .celebration-state {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .celebration-state.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        .initial-state {
+            transition: opacity 0.5s ease;
+        }
+        
+        .initial-state.hidden {
+            opacity: 0;
+            display: none;
+        }
+        
+        /* Full page confetti container */
+        .full-page-confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 100;
+        }
+        
+        /* Confetti pieces */
+        .confetti {
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        /* Ribbon/streamer confetti shapes - like the reference video */
+        .confetti.ribbon-long {
+            width: 20px;
+            height: 6px;
+            border-radius: 2px;
+        }
+        
+        .confetti.ribbon-medium {
+            width: 16px;
+            height: 5px;
+            border-radius: 2px;
+        }
+        
+        .confetti.ribbon-short {
+            width: 12px;
+            height: 4px;
+            border-radius: 1px;
+        }
+        
+        .confetti.streamer {
+            width: 4px;
+            height: 18px;
+            border-radius: 1px;
+        }
+        
+        .confetti.square {
+            width: 8px;
+            height: 8px;
+            border-radius: 1px;
+        }
+        
+        .confetti.rect {
+            width: 10px;
+            height: 5px;
+            border-radius: 1px;
+        }
+        
+        .confetti.curl {
+            width: 14px;
+            height: 3px;
+            border-radius: 50%;
+        }
+        
+        /* Smooth floating confetti - gentle tumbling fall */
+        @keyframes confetti-float {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) rotateX(0deg) rotateY(0deg);
+            }
+            25% {
+                opacity: 1;
+                transform: translate(calc(var(--dx) * 0.25 + var(--sway)), calc(var(--dy) * 0.25)) 
+                           rotate(calc(var(--rot) * 0.25)) rotateX(90deg) rotateY(45deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(calc(var(--dx) * 0.5 - var(--sway) * 0.5), calc(var(--dy) * 0.5)) 
+                           rotate(calc(var(--rot) * 0.5)) rotateX(180deg) rotateY(90deg);
+            }
+            75% {
+                opacity: 0.9;
+                transform: translate(calc(var(--dx) * 0.75 + var(--sway) * 0.3), calc(var(--dy) * 0.75)) 
+                           rotate(calc(var(--rot) * 0.75)) rotateX(270deg) rotateY(135deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) rotateX(360deg) rotateY(180deg);
+            }
+        }
+        
+        .confetti.animate {
+            animation: confetti-float var(--duration, 3s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+            transform-style: preserve-3d;
+        }
+        
+        .confetti.golden {
+            animation: confetti-float var(--duration, 3s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+            transform-style: preserve-3d;
+            filter: brightness(1.1);
+        }
+        
+        /* Party popper bounce */
+        @keyframes party-bounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            50% { transform: scale(1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-3deg); }
+        }
+        
+        .party-icon {
+            animation: party-bounce 0.6s ease-in-out;
+        }
+        
+        /* Text reveal */
+        @keyframes text-reveal {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .text-reveal {
+            opacity: 0;
+            animation: text-reveal 0.6s ease-out forwards;
+        }
+        
+        .text-reveal.delay-1 { animation-delay: 0.2s; }
+        .text-reveal.delay-2 { animation-delay: 0.4s; }
+        
+        /* Two cards state */
+        .two-cards-state {
+            display: none;
+        }
+        
+        .two-cards-state.active {
+            display: grid;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans relative overflow-hidden">
+    
+    <!-- Full Page Confetti Container -->
+    <div class="full-page-confetti-container" id="fullPageConfettiContainer"></div>
+    
+    <!-- Controls - Fixed at bottom center -->
+    <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div class="flex gap-3 justify-center bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
+            <button 
+                onclick="replayAnimations()" 
+                class="px-4 py-2 bg-brand-blue-500 text-white rounded-lg hover:bg-brand-blue-600 transition-colors"
+            >
+                Replay Animations
+            </button>
+            <button 
+                id="completeBtn"
+                onclick="completeGoal()" 
+                class="px-4 py-2 bg-success-green-500 text-white rounded-lg hover:bg-success-green-600 transition-colors"
+            >
+                Complete
+            </button>
+        </div>
+    </div>
+    
+    <div class="relative z-10">
+        <!-- Cards Container - Top Right Corner -->
+        <div id="cardsContainer" class="fixed" style="top: 100px; right: 40px;">
+        
+        <!-- Metric Card -->
+        <div class="metric-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative overflow-hidden transition-all duration-300" id="metricCard" style="width: 544px; height: 169px;">
+            
+            <!-- Initial State -->
+            <div class="initial-state h-full flex flex-col justify-between" id="initialState">
+                <!-- Header Row -->
+                <div class="flex items-center justify-between animate-on-load animate-fade-in-up">
+                    <h3 class="text-lg font-semibold text-gray-900">Emails sent</h3>
+                    <a href="#" class="text-brand-blue-500 font-medium transition-colors flex items-center gap-1">
+                        Send emails
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Metric Row -->
+                <div class="flex items-center justify-between">
+                    <!-- Main Metric -->
+                    <div class="flex items-baseline gap-2 animate-on-load animate-count-up delay-200">
+                        <span class="text-4xl font-bold text-brand-blue-500 number-counter" data-target="3">0</span>
+                        <span class="text-lg text-gray-400 font-medium">/ 5 emails</span>
+                    </div>
+                    
+                    <!-- Growth Badge -->
+                    <div class="animate-on-load animate-badge-pop delay-400">
+                        <div class="inline-flex items-center gap-1 px-2.5 py-1 bg-success-green-50 text-success-green-600 rounded-full text-sm font-semibold border border-success-green-500/20">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                            </svg>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="animate-on-load animate-fade-in-up delay-300">
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                                id="progressBar"
+                                class="progress-bar h-full bg-brand-blue-500 rounded-full animate-progress-fill relative overflow-hidden transition-all duration-1000"
+                                style="--progress-width: 60%"
+                            >
+                                <!-- Shimmer overlay -->
+                                <div class="absolute inset-0 shimmer-effect animate-shimmer"></div>
+                            </div>
+                        </div>
+                        <span id="progressPercent" class="text-sm font-medium text-gray-500 w-12 text-right animate-on-load animate-slide-in-right delay-600">60%</span>
+                    </div>
+                </div>
+                
+                <!-- Message Row -->
+                <div class="animate-on-load animate-fade-in-up delay-500">
+                    <p class="text-gray-600 text-sm">
+                        <span id="emailsLeft" class="font-semibold text-gray-700">2 emails left</span>
+                        <span> to reach your goal of </span>
+                        <span class="font-medium text-gray-700">Increase engagement</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Celebration State -->
+            <div class="celebration-state h-full flex flex-col" id="celebrationState">
+                <!-- Header Row -->
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900 text-reveal">Emails sent</h3>
+                    <a href="#" class="text-brand-blue-500 font-medium transition-colors flex items-center gap-1 text-reveal">
+                        Send emails
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Celebration Content - Centered in remaining space -->
+                <div class="flex-1 flex flex-col items-center justify-center">
+                    <!-- Party Popper Icon -->
+                    <div class="w-10 h-10 bg-success-green-50 rounded-full flex items-center justify-center mb-1.5 party-icon">
+                        <span class="text-xl">🎉</span>
+                    </div>
+                    
+                    <!-- Celebration Message -->
+                    <h2 class="text-base font-bold text-gray-900 mb-1.5 text-center text-reveal delay-1">
+                        Great job! You've hit your first milestone.
+                    </h2>
+                    
+                    <!-- Next Button -->
+                    <a href="#" onclick="showTwoCards(); return false;" class="inline-flex items-center gap-1.5 text-brand-blue-500 font-semibold text-sm transition-colors text-reveal delay-2" id="nextBtn">
+                        Next
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Two Cards State -->
+        <div class="two-cards-state grid-cols-2 gap-4" id="twoCardsState" style="width: 544px; height: 169px;">
+            <!-- Email Open Rate Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 h-full flex flex-col justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Email open rate</h3>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-4xl font-bold text-brand-blue-500">33%</span>
+                    <div class="inline-flex items-center gap-1 px-2.5 py-1 bg-success-green-50 text-success-green-600 rounded-full text-sm font-semibold border border-success-green-500/20">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                        </svg>
+                        <span>100%</span>
+                    </div>
+                </div>
+                
+                <p class="text-gray-500 text-sm">vs. prev. 30 days</p>
+            </div>
+            
+            <!-- Contact Growth Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 h-full flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Contact growth</h3>
+                    <a href="#" class="text-brand-blue-500 font-medium transition-colors">
+                        Grow
+                    </a>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-4xl font-bold text-brand-blue-500">1</span>
+                    <div class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full text-sm font-semibold border border-gray-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                        </svg>
+                        <span>50%</span>
+                    </div>
+                </div>
+                
+                <p class="text-gray-500 text-sm">vs. prev. 30 days</p>
+            </div>
+        </div>
+        
+        </div><!-- End Cards Container -->
+    </div>
+
+    <script>
+        // Number counter animation
+        function animateCounter(element, target, duration = 1000) {
+            const start = 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function (ease-out)
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (target - start) * easeOut);
+                
+                element.textContent = current;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    element.textContent = target;
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        // Initialize animations on page load
+        function initAnimations() {
+            const initialState = document.getElementById('initialState');
+            const counters = initialState.querySelectorAll('.number-counter');
+            
+            // Delay to sync with CSS animation
+            setTimeout(() => {
+                counters.forEach(counter => {
+                    const target = parseInt(counter.dataset.target);
+                    animateCounter(counter, target, 800);
+                });
+            }, 400); // Match delay-200 + animation start
+        }
+        
+        // Replay all animations (reset to initial state)
+        function replayAnimations() {
+            // First reset from celebration if needed
+            resetToInitial();
+            
+            const card = document.getElementById('metricCard');
+            const initialState = document.getElementById('initialState');
+            const animatedElements = initialState.querySelectorAll('.animate-on-load');
+            const counters = initialState.querySelectorAll('.number-counter');
+            const progressPercent = document.getElementById('progressPercent');
+            const emailsLeft = document.getElementById('emailsLeft');
+            
+            // Reset to initial values
+            counters.forEach(counter => {
+                counter.textContent = '0';
+                counter.dataset.target = '3';
+            });
+            
+            // Reset percentage and emails left
+            progressPercent.textContent = '60%';
+            emailsLeft.textContent = '2 emails left';
+            
+            // Remove and re-add animation classes
+            animatedElements.forEach(el => {
+                const classes = [...el.classList];
+                const animationClass = classes.find(c => c.startsWith('animate-') && c !== 'animate-on-load');
+                
+                if (animationClass) {
+                    el.classList.remove(animationClass);
+                    el.style.opacity = '0';
+                    
+                    // Force reflow
+                    void el.offsetWidth;
+                    
+                    el.classList.add(animationClass);
+                }
+            });
+            
+            // Reset progress bar to 60%
+            const progressBar = initialState.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.classList.remove('animate-progress-fill');
+                progressBar.style.setProperty('--progress-width', '60%');
+                progressBar.style.width = '0';
+                void progressBar.offsetWidth;
+                progressBar.classList.add('animate-progress-fill');
+            }
+            
+            // Restart counter animation
+            initAnimations();
+        }
+        
+        // Complete goal animation
+        function completeGoal() {
+            const counter = document.querySelector('.number-counter');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const emailsLeft = document.getElementById('emailsLeft');
+            
+            // Animate counter from current value to 5
+            const currentValue = parseInt(counter.textContent) || 3;
+            animateCounterFromTo(counter, currentValue, 5, 800);
+            
+            // Update progress bar to 100%
+            progressBar.style.setProperty('--progress-width', '100%');
+            progressBar.style.width = '100%';
+            
+            // Animate percentage
+            animatePercentage(progressPercent, 60, 100, 800);
+            
+            // Update emails left text with animation
+            emailsLeft.style.transition = 'opacity 0.3s ease';
+            emailsLeft.style.opacity = '0';
+            setTimeout(() => {
+                emailsLeft.textContent = '0 emails left';
+                emailsLeft.style.opacity = '1';
+            }, 300);
+            
+            // Update data-target for replay
+            counter.dataset.target = '5';
+            
+            // Wait 2 seconds then transition to celebration state
+            setTimeout(() => {
+                showCelebration();
+            }, 2000);
+        }
+        
+        // Track timeout for auto-transition
+        let twoCardsTimeout = null;
+        
+        // Show celebration state with confetti
+        function showCelebration() {
+            const card = document.getElementById('metricCard');
+            const initialState = document.getElementById('initialState');
+            const celebrationState = document.getElementById('celebrationState');
+            
+            // Change card background to light green
+            card.classList.remove('bg-white');
+            card.classList.add('bg-gradient-to-tl', 'from-green-50', 'to-white');
+            
+            // Hide initial state
+            initialState.classList.add('hidden');
+            
+            // Show celebration state
+            celebrationState.classList.add('active');
+            
+            // Start confetti
+            startConfetti();
+            
+            // Auto-transition to two cards after confetti (2s) + 3s wait = 5s
+            twoCardsTimeout = setTimeout(() => {
+                showTwoCards();
+            }, 5000);
+        }
+        
+        // Show two cards state
+        function showTwoCards() {
+            // Clear any pending timeout
+            if (twoCardsTimeout) {
+                clearTimeout(twoCardsTimeout);
+                twoCardsTimeout = null;
+            }
+            
+            const metricCard = document.getElementById('metricCard');
+            const twoCardsState = document.getElementById('twoCardsState');
+            const confettiContainer = document.getElementById('fullPageConfettiContainer');
+            
+            // Clear confetti
+            confettiContainer.innerHTML = '';
+            
+            // Instantly hide metric card and show two cards
+            metricCard.style.display = 'none';
+            twoCardsState.classList.add('active');
+        }
+        
+        // Smooth floating confetti from top right corner
+        function startConfetti() {
+            const container = document.getElementById('fullPageConfettiContainer');
+            
+            // Clear existing confetti
+            container.innerHTML = '';
+            
+            // Colors matching the reference video - pink, blue, gold/yellow, red
+            const colors = [
+                '#E91E63', // Pink
+                '#F06292', // Light pink
+                '#EC407A', // Rose
+                '#2196F3', // Blue
+                '#42A5F5', // Light blue
+                '#1E88E5', // Medium blue
+                '#FFD700', // Gold
+                '#FFC107', // Amber
+                '#FFCA28', // Yellow gold
+                '#F44336', // Red
+                '#EF5350', // Light red
+                '#E53935', // Dark red
+            ];
+            
+            const shapes = ['ribbon-long', 'ribbon-medium', 'ribbon-short', 'streamer', 'square', 'rect', 'curl'];
+            
+            // Origin - top right corner of the page
+            const originX = window.innerWidth - 50;
+            const originY = 0;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            
+            // Single burst - create all confetti at once
+            const totalCount = 250;
+            
+            for (let i = 0; i < totalCount; i++) {
+                const el = document.createElement('div');
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                el.className = `confetti ${shape} animate`;
+                el.style.backgroundColor = color;
+                el.style.left = originX + 'px';
+                el.style.top = originY + 'px';
+                
+                // Spread across entire page width
+                const dx = -Math.random() * screenWidth * 0.95;
+                
+                // Fall to bottom with variation
+                const dy = screenHeight * (0.85 + Math.random() * 0.15);
+                
+                // Gentle rotation
+                const rot = (180 + Math.random() * 360) * (Math.random() > 0.5 ? 1 : -1);
+                
+                // Sway amount for floating effect
+                const sway = (20 + Math.random() * 40) * (Math.random() > 0.5 ? 1 : -1);
+                
+                el.style.setProperty('--dx', dx + 'px');
+                el.style.setProperty('--dy', dy + 'px');
+                el.style.setProperty('--rot', rot + 'deg');
+                el.style.setProperty('--sway', sway + 'px');
+                
+                // Longer, varied duration for smooth floating (2.5s - 4.5s)
+                const duration = 2.5 + Math.random() * 2;
+                el.style.setProperty('--duration', duration + 's');
+                
+                // Staggered start for natural burst feel
+                el.style.animationDelay = (Math.random() * 0.3) + 's';
+                
+                container.appendChild(el);
+            }
+            
+            // Cleanup after animations complete
+            setTimeout(() => { container.innerHTML = ''; }, 5000);
+        }
+        
+        // Reset to initial state
+        function resetToInitial() {
+            // Clear any pending timeout
+            if (twoCardsTimeout) {
+                clearTimeout(twoCardsTimeout);
+                twoCardsTimeout = null;
+            }
+            
+            const card = document.getElementById('metricCard');
+            const initialState = document.getElementById('initialState');
+            const celebrationState = document.getElementById('celebrationState');
+            const twoCardsState = document.getElementById('twoCardsState');
+            const container = document.getElementById('fullPageConfettiContainer');
+            
+            // Clear confetti
+            container.innerHTML = '';
+            
+            // Hide two cards state
+            twoCardsState.classList.remove('active');
+            
+            // Reset and show metric card
+            card.style.display = 'block';
+            card.style.opacity = '1';
+            card.style.transform = 'scale(1)';
+            
+            // Reset card background
+            card.classList.remove('bg-gradient-to-tl', 'from-green-50', 'to-white');
+            card.classList.add('bg-white');
+            
+            // Hide celebration state
+            celebrationState.classList.remove('active');
+            
+            // Show initial state
+            initialState.classList.remove('hidden');
+        }
+        
+        // Animate counter from one value to another
+        function animateCounterFromTo(element, start, target, duration = 1000) {
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function (ease-out)
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (target - start) * easeOut);
+                
+                element.textContent = current;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    element.textContent = target;
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        // Animate percentage text
+        function animatePercentage(element, start, target, duration = 1000) {
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (target - start) * easeOut);
+                
+                element.textContent = current + '%';
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    element.textContent = target + '%';
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', initAnimations);
+    </script>
+</body>
+</html>
+
