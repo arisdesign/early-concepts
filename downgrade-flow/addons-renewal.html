@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add-ons - Renewal Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Figma Design Tokens - Primary Blues
+                        'ctct-blue': '#1856ed',           // Raw Colors/Blue/Constant Blue
+                        'ctct-blue-dark': '#1330bf',      // Raw Colors/Blue/Blueberry
+                        'ctct-sapphire': '#12277d',       // Raw Colors/Blue/Sapphire (darkest blue)
+                        'ctct-sky': '#a6daff',            // Raw Colors/Blue/Sky
+                        'ctct-arctic': '#d9f2ff',         // Raw Colors/Blue/Arctic
+                        'ctct-poolside': '#84dfff',       // Raw Colors/Blue/Poolside
+                        
+                        // Figma Design Tokens - Neutrals
+                        'ctct-gray': '#5d687e',           // Raw Colors/Neutral/Slate
+                        'ctct-light': '#f7f9fd',          // Raw Colors/Neutral/Vodka
+                        'ctct-border': '#dce2ec',         // Raw Colors/Neutral/Silver
+                        'ctct-overcast': '#edf1f8',       // Raw Colors/Neutral/Overcast
+                        'ctct-chinchilla': '#c9d0de',     // Raw Colors/Neutral/Chinchilla
+                        'ctct-shadow': '#0f141c',         // Raw Colors/Neutral/Shadow
+                        'ctct-dark': '#313b4d',           // Text/text-neutral-dark
+                        
+                        // Figma Design Tokens - Alert Colors
+                        'ctct-warning': '#f79009',        // Icon/icon-warning
+                        'ctct-warning-bg': '#fff2de',     // Alert/alert-bg-warning
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Add-on card hover effect */
+        .addon-card {
+            transition: box-shadow 0.2s ease;
+        }
+        .addon-card:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-ctct-light min-h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="bg-ctct-blue px-4 sm:px-6 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <img src="ctct-logo-white.png" alt="Constant Contact" class="h-8 w-auto">
+            </div>
+            
+            <!-- Close Button -->
+            <button class="text-white hover:text-white/80 transition-colors p-2" aria-label="Close">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Progress Stepper -->
+    <div class="bg-white border-b border-ctct-border">
+        <div class="max-w-3xl mx-auto px-4 py-6">
+            <div class="flex items-center">
+                <!-- Step 1: Select plan (completed - clickable) -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" id="step-select-plan">
+                    <div class="w-5 h-5 rounded-full bg-ctct-blue flex items-center justify-center flex-shrink-0">
+                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-gray-500 whitespace-nowrap">Select plan</span>
+                </div>
+                
+                <!-- Connector (completed) -->
+                <div class="flex-1 h-px bg-ctct-blue mx-4 -mt-6"></div>
+                
+                <!-- Step 2: Add-ons (active) -->
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-ctct-blue bg-white flex items-center justify-center flex-shrink-0">
+                        <div class="w-2 h-2 rounded-full bg-ctct-blue"></div>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-900 whitespace-nowrap">Add-ons</span>
+                </div>
+                
+                <!-- Connector -->
+                <div class="flex-1 h-px bg-ctct-border mx-4 -mt-6"></div>
+                
+                <!-- Step 3: Checkout -->
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-ctct-border bg-white flex-shrink-0"></div>
+                    <span class="text-sm font-medium text-gray-500 whitespace-nowrap">Checkout</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col lg:flex-row gap-6">
+                
+                <!-- Add-ons List (Left Column) -->
+                <div class="flex-1 space-y-4">
+                    
+                    <!-- SMS Marketing -->
+                    <div class="addon-card bg-white rounded-xl border border-ctct-border overflow-hidden">
+                        <!-- Header -->
+                        <div class="p-4 sm:p-6 border-b border-ctct-border">
+                            <div class="flex items-start gap-4">
+                                <!-- Icon -->
+                                <div class="flex-shrink-0">
+                                    <svg class="w-8 h-8 text-ctct-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                    </svg>
+                                </div>
+                                <!-- Title & Description -->
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-ctct-blue mb-1">SMS Marketing</h3>
+                                    <p class="text-sm text-gray-700">
+                                        <span class="font-semibold">Open rates as high as 98%.</span> Send targeted text messages to instantly connect with and grow your audience.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pricing Option (Already Added State) -->
+                        <div class="p-4 sm:p-6 bg-ctct-light/50">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <p class="text-3xl font-bold text-gray-900">0 – 500</p>
+                                    <p class="text-sm text-ctct-gray">SMS/month</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-right">
+                                        <span class="text-sm text-gray-900 align-top">$</span>
+                                        <span class="text-4xl font-bold text-gray-900">10</span>
+                                        <span class="text-sm text-ctct-gray">/month</span>
+                                    </div>
+                                    <button id="sms-toggle-btn" class="addon-toggle-btn min-w-[140px] px-5 py-2.5 rounded-full border-2 border-ctct-blue bg-ctct-blue text-white font-semibold transition-colors whitespace-nowrap flex items-center justify-center gap-2" data-selected="true">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" fill="white" stroke="white" stroke-width="0"/>
+                                            <path stroke="#1856ed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 13l3 3 7-7"/>
+                                        </svg>
+                                        <span class="btn-text">Added</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- SMS Removal Warning (hidden by default) -->
+                            <div id="sms-removal-warning" class="hidden mt-4 p-4 bg-ctct-warning-bg border border-ctct-warning/30 rounded-lg flex items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <svg class="w-5 h-5 text-ctct-warning" fill="none" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 8v4M12 16h.01"/>
+                                    </svg>
+                                </div>
+                                <p class="text-sm text-gray-700">Removing the SMS add-on will take effect at renewal, it removes your ability to send texts to your customers and prospects.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- View More Link -->
+                        <div class="px-4 sm:px-6 py-3 border-t border-ctct-border">
+                            <a href="#" class="text-sm font-medium text-gray-900 underline hover:text-ctct-blue transition-colors">
+                                View additional SMS options
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Inbox Preview -->
+                    <div class="addon-card bg-white rounded-xl border border-ctct-border overflow-hidden">
+                        <!-- Header -->
+                        <div class="p-4 sm:p-6 border-b border-ctct-border">
+                            <div class="flex items-start gap-4">
+                                <!-- Icon -->
+                                <div class="flex-shrink-0">
+                                    <svg class="w-8 h-8 text-ctct-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <!-- Title & Description -->
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-ctct-blue mb-1">Inbox Preview</h3>
+                                    <p class="text-sm text-gray-700">
+                                        <span class="font-semibold">Error free emails, every time.</span> See how your email looks on 5 different email platforms and on mobile devices prior to sending.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pricing Option -->
+                        <div class="p-4 sm:p-6 bg-ctct-light/50">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <p class="text-3xl font-bold text-gray-900">25 previews</p>
+                                    <p class="text-sm text-ctct-gray">/month</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-right">
+                                        <span class="text-sm text-gray-900 align-top">$</span>
+                                        <span class="text-4xl font-bold text-gray-900">45</span>
+                                        <span class="text-sm text-ctct-gray">/month</span>
+                                    </div>
+                                    <button class="addon-toggle-btn min-w-[140px] px-6 py-2.5 rounded-full border-2 border-ctct-blue text-ctct-blue font-semibold hover:bg-ctct-blue hover:text-white transition-colors whitespace-nowrap flex items-center justify-center gap-2" data-selected="false">
+                                        <span class="btn-text">Add to plan</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Xero Accounting -->
+                    <div class="addon-card bg-white rounded-xl border border-ctct-border overflow-hidden">
+                        <!-- Header -->
+                        <div class="p-4 sm:p-6 border-b border-ctct-border">
+                            <div class="flex items-start gap-4">
+                                <!-- Xero Logo -->
+                                <div class="flex-shrink-0 w-10 h-10 bg-[#13B5EA] rounded-lg flex items-center justify-center">
+                                    <span class="text-white text-xs font-bold italic">xero</span>
+                                </div>
+                                <!-- Title & Description -->
+                                <div class="flex-1 flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                                    <h3 class="text-xl font-bold text-ctct-blue whitespace-nowrap">Xero Accounting</h3>
+                                    <div class="hidden sm:block w-px h-12 bg-ctct-border flex-shrink-0"></div>
+                                    <p class="text-sm text-gray-700">
+                                        <span class="font-semibold">Track what your emails earn</span> and market smarter by connecting to Xero's powerful all-in-one accounting platform.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pricing Option -->
+                        <div class="p-4 sm:p-6 bg-ctct-light/50">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <p class="text-3xl font-bold text-gray-900">6 months</p>
+                                    <p class="text-sm text-ctct-gray">for Constant Contact customers</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-4xl font-bold text-gray-900">Free</span>
+                                    <button class="addon-toggle-btn min-w-[140px] px-6 py-2.5 rounded-full border-2 border-ctct-blue text-ctct-blue font-semibold hover:bg-ctct-blue hover:text-white transition-colors whitespace-nowrap flex items-center justify-center gap-2" data-selected="false">
+                                        <span class="btn-text">Add to plan</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Sidebar (Right Column) -->
+                <div class="lg:w-80 flex-shrink-0">
+                    <div class="bg-white rounded-xl border border-ctct-border p-6 sticky top-6">
+                        <!-- Info Message -->
+                        <div class="flex gap-3 mb-6">
+                            <div class="flex-shrink-0">
+                                <svg class="w-8 h-8 text-ctct-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-gray-700">
+                                Not sure if you're ready for add-ons? You can always add them later after signing up!
+                            </p>
+                        </div>
+                        
+                        <!-- Continue Button -->
+                        <button class="w-full py-3 px-4 rounded-full bg-ctct-blue text-white font-semibold hover:bg-ctct-blue-dark transition-colors">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </main>
+    <!-- JavaScript for Interactivity -->
+    <script>
+        // Add-on data for pricing
+        const addonData = {
+            'SMS Marketing': { price: 10, tier: '0 – 500 SMS/mo' },
+            'Inbox Preview': { price: 45, tier: '25 previews/month' },
+            'Xero Accounting': { price: 0, tier: '6 months free' }
+        };
+        
+        // Checkmark SVG for selected state
+        const checkmarkSvg = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="white" stroke="white" stroke-width="0"/>
+            <path stroke="#1856ed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 13l3 3 7-7"/>
+        </svg>`;
+        
+        // Function to save selected add-ons to localStorage
+        function saveSelectedAddons() {
+            const selectedAddons = [];
+            document.querySelectorAll('.addon-toggle-btn').forEach(button => {
+                if (button.getAttribute('data-selected') === 'true') {
+                    const addonName = button.closest('.addon-card').querySelector('h3').textContent;
+                    const addon = addonData[addonName];
+                    if (addon) {
+                        selectedAddons.push({
+                            name: addonName,
+                            price: addon.price,
+                            tier: addon.tier
+                        });
+                    }
+                }
+            });
+            localStorage.setItem('selectedAddons', JSON.stringify(selectedAddons));
+        }
+        
+        // Toggle button handlers for selectable add-ons
+        document.querySelectorAll('.addon-toggle-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const addonName = this.closest('.addon-card').querySelector('h3').textContent;
+                const isSelected = this.getAttribute('data-selected') === 'true';
+                const btnText = this.querySelector('.btn-text');
+                const isSmsButton = this.id === 'sms-toggle-btn';
+                const smsWarning = document.getElementById('sms-removal-warning');
+                
+                if (!isSelected) {
+                    // Select the add-on
+                    this.setAttribute('data-selected', 'true');
+                    this.classList.remove('text-ctct-blue', 'hover:bg-ctct-blue', 'hover:text-white');
+                    this.classList.add('bg-ctct-blue', 'text-white');
+                    this.innerHTML = checkmarkSvg + '<span class="btn-text">Added</span>';
+                    console.log('Added addon:', addonName);
+                    
+                    // Hide SMS warning if re-adding SMS
+                    if (isSmsButton && smsWarning) {
+                        smsWarning.classList.add('hidden');
+                    }
+                } else {
+                    // Deselect the add-on
+                    this.setAttribute('data-selected', 'false');
+                    this.classList.remove('bg-ctct-blue', 'text-white');
+                    this.classList.add('text-ctct-blue', 'hover:bg-ctct-blue', 'hover:text-white');
+                    this.innerHTML = '<span class="btn-text">Add to plan</span>';
+                    console.log('Removed addon:', addonName);
+                    
+                    // Show SMS warning if removing SMS
+                    if (isSmsButton && smsWarning) {
+                        smsWarning.classList.remove('hidden');
+                    }
+                }
+                
+                // Save to localStorage after each change
+                saveSelectedAddons();
+            });
+        });
+        
+        // Save initial state on page load
+        saveSelectedAddons();
+
+        // Continue button handler
+        document.querySelector('.lg\\:w-80 button').addEventListener('click', function() {
+            console.log('Proceeding to checkout...');
+            // Save add-ons one more time before navigating
+            saveSelectedAddons();
+            // Navigate to checkout step
+            window.location.href = 'checkout-renewal.html';
+        });
+
+        // Progress stepper navigation
+        document.getElementById('step-select-plan')?.addEventListener('click', function() {
+            window.location.href = 'plan-selection-renewal.html';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Plan - Renewal Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Figma Design Tokens - Primary Blues
+                        'ctct-blue': '#1856ed',           // Raw Colors/Blue/Constant Blue
+                        'ctct-blue-dark': '#1330bf',      // Raw Colors/Blue/Blueberry
+                        'ctct-sapphire': '#12277d',       // Raw Colors/Blue/Sapphire (darkest blue)
+                        'ctct-sky': '#a6daff',            // Raw Colors/Blue/Sky
+                        'ctct-arctic': '#d9f2ff',         // Raw Colors/Blue/Arctic
+                        'ctct-poolside': '#84dfff',       // Raw Colors/Blue/Poolside
+                        
+                        // Figma Design Tokens - Neutrals
+                        'ctct-gray': '#5d687e',           // Raw Colors/Neutral/Slate
+                        'ctct-light': '#f7f9fd',          // Raw Colors/Neutral/Vodka
+                        'ctct-border': '#dce2ec',         // Raw Colors/Neutral/Silver
+                        'ctct-overcast': '#edf1f8',       // Raw Colors/Neutral/Overcast
+                        'ctct-chinchilla': '#c9d0de',     // Raw Colors/Neutral/Chinchilla
+                        'ctct-shadow': '#0f141c',         // Raw Colors/Neutral/Shadow
+                        'ctct-dark': '#313b4d',           // Text/text-neutral-dark
+                        
+                        // Figma Design Tokens - Alert Colors
+                        'ctct-warning': '#f79009',        // Icon/icon-warning
+                        'ctct-warning-bg': '#fff2de',     // Alert/alert-bg-warning
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom radio button styling - target span after checked input */
+        .billing-option input[type="radio"]:checked + span {
+            background-color: white;
+            border-color: #1856ed !important; /* Blue border for selected */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Selected state - dark text for main label */
+        .billing-option input[type="radio"]:checked + span .billing-label {
+            color: #313b4d !important; /* Dark text */
+        }
+        
+        /* Selected state - green text for savings */
+        .billing-option input[type="radio"]:checked + span .billing-save {
+            color: #16a34a !important; /* Green text */
+        }
+        
+        /* Unselected state - gray text for all */
+        .billing-option input[type="radio"]:not(:checked) + span .billing-label,
+        .billing-option input[type="radio"]:not(:checked) + span .billing-save,
+        .billing-option input[type="radio"]:not(:checked) + span .billing-current {
+            color: #5D687E !important; /* Gray text */
+        }
+        
+        /* Hover state for unselected options */
+        .billing-option input[type="radio"]:not(:checked) + span:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Plan card hover effect */
+        .plan-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .plan-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Recommended badge animation */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        .recommended-badge {
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-ctct-light min-h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="bg-ctct-blue px-4 sm:px-6 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <img src="ctct-logo-white.png" alt="Constant Contact" class="h-8 w-auto">
+            </div>
+            
+            <!-- Close Button -->
+            <button class="text-white hover:text-white/80 transition-colors p-2" aria-label="Close">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Progress Stepper -->
+    <div class="bg-white border-b border-ctct-border">
+        <div class="max-w-3xl mx-auto px-4 py-6">
+            <div class="flex items-center">
+                <!-- Step 1: Select plan (active) -->
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-ctct-blue bg-white flex items-center justify-center flex-shrink-0">
+                        <div class="w-2 h-2 rounded-full bg-ctct-blue"></div>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-900 whitespace-nowrap">Select plan</span>
+                </div>
+                
+                <!-- Connector -->
+                <div class="flex-1 h-px bg-ctct-border mx-4 -mt-6"></div>
+                
+                <!-- Step 2: Add-ons -->
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-ctct-border bg-white flex-shrink-0"></div>
+                    <span class="text-sm font-medium text-gray-500 whitespace-nowrap">Add-ons</span>
+                </div>
+                
+                <!-- Connector -->
+                <div class="flex-1 h-px bg-ctct-border mx-4 -mt-6"></div>
+                
+                <!-- Step 3: Checkout -->
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-ctct-border bg-white flex-shrink-0"></div>
+                    <span class="text-sm font-medium text-gray-500 whitespace-nowrap">Checkout</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- Prepay and Nonprofit Discounts Section -->
+            <div class="bg-white rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Prepay and nonprofit discounts</h2>
+                    <button class="text-ctct-blue hover:text-ctct-blue-dark p-1" aria-label="Learn more">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+                    <!-- Billing Period Options -->
+                    <div class="w-full lg:flex-1 flex flex-wrap items-stretch gap-2 sm:gap-1 sm:flex sm:rounded-lg sm:border sm:border-ctct-border sm:p-1 bg-ctct-light sm:bg-white">
+                        <!-- Monthly -->
+                        <label class="billing-option flex-1 flex">
+                            <input type="radio" name="billing" value="monthly" class="sr-only">
+                            <span class="flex flex-col justify-center w-full px-4 sm:px-6 py-3 rounded-lg sm:rounded-md text-center cursor-pointer border-2 border-transparent bg-ctct-light transition-all">
+                                <span class="billing-label block text-sm font-medium">Monthly</span>
+                            </span>
+                        </label>
+                        
+                        <!-- Prepay 6 months -->
+                        <label class="billing-option flex-1 flex">
+                            <input type="radio" name="billing" value="6months" class="sr-only">
+                            <span class="flex flex-col justify-center w-full px-4 sm:px-6 py-3 rounded-lg sm:rounded-md text-center cursor-pointer border-2 border-transparent bg-ctct-light transition-all">
+                                <span class="billing-label block text-sm font-medium">Prepay 6 months</span>
+                                <span class="billing-save block text-xs font-medium">SAVE 10%</span>
+                            </span>
+                        </label>
+                        
+                        <!-- Prepay 12 months (Current plan) -->
+                        <label class="billing-option flex-1 flex">
+                            <input type="radio" name="billing" value="12months" class="sr-only" checked>
+                            <span class="flex flex-col justify-center w-full px-4 sm:px-6 py-3 rounded-lg sm:rounded-md text-center cursor-pointer border-2 border-transparent bg-ctct-light transition-all">
+                                <span class="billing-label block text-sm font-medium">Prepay 12 months</span>
+                                <span class="billing-save block text-xs font-medium">SAVE 15%</span>
+                                <span class="billing-current block text-xs">Current</span>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- Nonprofit Toggle -->
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <span class="text-sm text-gray-700">Nonprofit?</span>
+                        <button type="button" role="switch" aria-checked="false" class="nonprofit-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ctct-blue focus:ring-offset-2">
+                            <span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Warning Alert for billing change -->
+            <div id="billing-warning" class="hidden bg-ctct-warning-bg border border-ctct-warning/30 rounded-xl p-4 mb-6 sm:mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 text-ctct-warning" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <p id="billing-warning-text" class="text-sm text-ctct-dark"></p>
+                </div>
+            </div>
+
+            <!-- Plan Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[auto_1fr_1fr_1fr] gap-5">
+                
+                <!-- G2 Badges - First element, visible at lg (1024px) and above -->
+                <div class="hidden lg:flex items-end justify-center w-[112px]">
+                    <img src="g2-badges.png" alt="G2 Best Software 2025 - Top 50 Marketing + Digital Advertising Products, Top 100 Global Companies" class="w-full h-auto">
+                </div>
+                
+                <!-- Lite Plan -->
+                <div class="plan-card bg-white rounded-xl p-6 sm:p-8 border border-ctct-border shadow-sm">
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Lite</h3>
+                    
+                    <!-- Pricing -->
+                    <div class="mb-4">
+                        <span class="text-sm text-gray-400 line-through">$12</span>
+                        <div class="flex items-baseline">
+                            <span class="text-lg text-gray-900">$</span>
+                            <span class="text-5xl sm:text-6xl font-bold text-gray-900">8</span>
+                            <span class="text-2xl sm:text-3xl font-bold text-gray-900">40</span>
+                            <span class="text-sm text-ctct-gray ml-1">/month*</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <p class="text-base font-semibold text-gray-900 mb-2">Ideal for beginners</p>
+                    <p class="text-sm text-ctct-gray mb-6">Start marketing with award-winning email and social media tools.</p>
+                    
+                    <!-- CTA Button -->
+                    <button onclick="window.location.href='addons-renewal.html'" class="w-full py-3 px-4 rounded-full border-2 border-ctct-blue text-ctct-blue font-semibold bg-white hover:bg-ctct-light transition-colors">
+                        Downgrade
+                    </button>
+                </div>
+
+                <!-- Standard Plan (Current) -->
+                <div class="plan-card bg-white rounded-xl p-6 sm:p-8 border border-ctct-border shadow-sm">
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Standard</h3>
+                    
+                    <!-- Pricing -->
+                    <div class="mb-4">
+                        <span class="text-sm text-gray-400 line-through">$35</span>
+                        <div class="flex items-baseline">
+                            <span class="text-lg text-gray-900">$</span>
+                            <span class="text-5xl sm:text-6xl font-bold text-gray-900">24</span>
+                            <span class="text-2xl sm:text-3xl font-bold text-gray-900">50</span>
+                            <span class="text-sm text-ctct-gray ml-1">/month*</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <p class="text-base font-semibold text-gray-900 mb-2">Great for most business</p>
+                    <p class="text-sm text-ctct-gray mb-6">Grow faster with powerful automated marketing tools.</p>
+                    
+                    <!-- CTA Button (Current Plan) -->
+                    <button onclick="window.location.href='addons-renewal.html'" class="w-full py-3 px-4 rounded-full border-2 border-ctct-blue text-ctct-blue font-semibold bg-white hover:bg-ctct-light transition-colors">
+                        Select current plan
+                    </button>
+                </div>
+
+                <!-- Premium Plan (Recommended) -->
+                <div class="plan-card relative bg-white rounded-xl border-2 border-ctct-blue shadow-lg overflow-hidden">
+                    <!-- Recommended Badge -->
+                    <div class="recommended-badge absolute top-0 left-0 right-0">
+                        <div class="bg-ctct-blue text-white text-center py-2 text-sm font-semibold">
+                            Recommended
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 sm:p-8 pt-12 sm:pt-14">
+                        <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Premium</h3>
+                        
+                        <!-- Pricing -->
+                        <div class="mb-4">
+                            <span class="text-sm text-gray-400 line-through">$80</span>
+                            <div class="flex items-baseline">
+                                <span class="text-lg text-gray-900">$</span>
+                                <span class="text-5xl sm:text-6xl font-bold text-gray-900">56</span>
+                                <span class="text-2xl sm:text-3xl font-bold text-gray-900">00</span>
+                                <span class="text-sm text-ctct-gray ml-1">/month*</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <p class="text-base font-semibold text-gray-900 mb-2">Ideal for pros</p>
+                        <p class="text-sm text-ctct-gray mb-6">Get industry-leading tools for automation, segmentation, and more.</p>
+                        
+                        <!-- CTA Button -->
+                        <button class="w-full py-3 px-4 rounded-full bg-ctct-blue text-white font-semibold hover:bg-ctct-blue-dark transition-colors">
+                            Upgrade
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+    <!-- JavaScript for Interactivity -->
+    <script>
+        // Billing option selection
+        const billingWarning = document.getElementById('billing-warning');
+        const billingWarningText = document.getElementById('billing-warning-text');
+        
+        // Savings percentages for each billing option
+        const billingSavings = {
+            'monthly': 0,
+            '6months': 10,
+            '12months': 15
+        };
+        
+        // Current/initial billing selection (user's existing plan)
+        const initialBilling = '12months';
+        const initialSavings = billingSavings[initialBilling];
+        
+        function updateBillingWarning(value) {
+            const newSavings = billingSavings[value];
+            const lostSavings = initialSavings - newSavings;
+            
+            if (value === 'monthly' && lostSavings > 0) {
+                billingWarningText.textContent = `Switching to a monthly plan increases your annual cost by ${lostSavings}%`;
+                billingWarning.classList.remove('hidden');
+            } else if (value === '6months' && lostSavings > 0) {
+                billingWarningText.textContent = `Switching to 6-month prepay increases your annual cost by ${lostSavings}%`;
+                billingWarning.classList.remove('hidden');
+            } else {
+                billingWarning.classList.add('hidden');
+            }
+        }
+        
+        document.querySelectorAll('.billing-option input').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const value = this.value;
+                console.log('Selected billing period:', value);
+                
+                // Save selection to localStorage
+                localStorage.setItem('selectedBilling', value);
+                
+                // Show/hide warning based on selection
+                updateBillingWarning(value);
+            });
+        });
+
+        // Nonprofit toggle
+        document.querySelector('.nonprofit-toggle').addEventListener('click', function() {
+            const isChecked = this.getAttribute('aria-checked') === 'true';
+            this.setAttribute('aria-checked', !isChecked);
+            
+            const toggle = this.querySelector('span');
+            if (!isChecked) {
+                this.classList.remove('bg-gray-200');
+                this.classList.add('bg-ctct-blue');
+                toggle.classList.remove('translate-x-0');
+                toggle.classList.add('translate-x-5');
+            } else {
+                this.classList.remove('bg-ctct-blue');
+                this.classList.add('bg-gray-200');
+                toggle.classList.remove('translate-x-5');
+                toggle.classList.add('translate-x-0');
+            }
+            
+            // Save nonprofit status to localStorage
+            localStorage.setItem('isNonprofit', !isChecked);
+            
+            console.log('Nonprofit status:', !isChecked);
+        });
+
+        // Plan data for pricing calculations
+        const planData = {
+            'Lite': { basePrice: 12, discountedPrice: 8.40, contacts: '0 - 500' },
+            'Standard': { basePrice: 35, discountedPrice: 24.50, contacts: '0 - 500' },
+            'Premium': { basePrice: 80, discountedPrice: 56.00, contacts: '500 - 1,000' }
+        };
+
+        // Plan button click handlers
+        document.querySelectorAll('.plan-card button').forEach(button => {
+            if (!button.disabled && !button.classList.contains('cursor-not-allowed')) {
+                button.addEventListener('click', function() {
+                    const planName = this.closest('.plan-card').querySelector('h3').textContent;
+                    console.log('Selected plan:', planName);
+                    
+                    // Save selected plan to localStorage
+                    const selectedPlan = planData[planName];
+                    if (selectedPlan) {
+                        localStorage.setItem('selectedPlan', JSON.stringify({
+                            name: planName,
+                            basePrice: selectedPlan.basePrice,
+                            discountedPrice: selectedPlan.discountedPrice,
+                            contacts: selectedPlan.contacts
+                        }));
+                    }
+                    
+                    // Navigate to add-ons step
+                    window.location.href = 'addons-renewal.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

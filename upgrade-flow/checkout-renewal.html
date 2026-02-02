@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Renewal Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Figma Design Tokens - Primary Blues
+                        'ctct-blue': '#1856ed',
+                        'ctct-blue-dark': '#1330bf',
+                        'ctct-sapphire': '#12277d',
+                        'ctct-sky': '#a6daff',
+                        'ctct-arctic': '#d9f2ff',
+                        'ctct-poolside': '#84dfff',
+                        
+                        // Figma Design Tokens - Neutrals
+                        'ctct-gray': '#5d687e',
+                        'ctct-light': '#f7f9fd',
+                        'ctct-border': '#dce2ec',
+                        'ctct-overcast': '#edf1f8',
+                        'ctct-chinchilla': '#c9d0de',
+                        'ctct-shadow': '#0f141c',
+                        'ctct-dark': '#313b4d',
+                        
+                        // Figma Design Tokens - Alert/Success Colors
+                        'ctct-warning': '#f79009',
+                        'ctct-warning-bg': '#fff2de',
+                        'ctct-orange': '#f79009',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Payment method selection */
+        .payment-option input[type="radio"]:checked + label {
+            border-color: #1856ed;
+            background-color: #f7f9fd;
+        }
+        
+        /* Custom radio button styling */
+        .billing-option input[type="radio"]:checked + span {
+            background-color: white;
+            border-color: #1856ed !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-ctct-light min-h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="bg-ctct-blue px-4 sm:px-6 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <img src="ctct-logo-white.png" alt="Constant Contact" class="h-8 w-auto">
+            </div>
+            
+            <!-- Close Button -->
+            <button class="text-white hover:text-white/80 transition-colors p-2" aria-label="Close">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Progress Stepper -->
+    <div class="bg-white border-b border-ctct-border">
+        <div class="max-w-3xl mx-auto px-4 py-6">
+            <div class="flex items-center">
+                <!-- Step 1: Select plan (completed - clickable) -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" id="step-select-plan">
+                    <div class="w-5 h-5 rounded-full bg-ctct-blue flex items-center justify-center flex-shrink-0">
+                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-gray-500 whitespace-nowrap">Select plan</span>
+                </div>
+                
+                <!-- Connector (completed) -->
+                <div class="flex-1 h-px bg-ctct-blue mx-4 -mt-6"></div>
+                
+                <!-- Step 2: Add-ons (completed - clickable) -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" id="step-addons">
+                    <div class="w-5 h-5 rounded-full bg-ctct-blue flex items-center justify-center flex-shrink-0">
+                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-gray-500 whitespace-nowrap">Add-ons</span>
+                </div>
+                
+                <!-- Connector (completed) -->
+                <div class="flex-1 h-px bg-ctct-blue mx-4 -mt-6"></div>
+                
+                <!-- Step 3: Checkout (active) -->
+                <div class="flex flex-col items-center gap-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-ctct-blue bg-white flex items-center justify-center flex-shrink-0">
+                        <div class="w-2 h-2 rounded-full bg-ctct-blue"></div>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-900 whitespace-nowrap">Checkout</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- Prepay and Nonprofit Discounts Section -->
+            <div class="bg-white rounded-xl p-4 sm:p-6 mb-6 shadow-sm border border-ctct-border">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Prepay and nonprofit discounts</h2>
+                    <button class="text-ctct-blue hover:text-ctct-blue-dark p-1" aria-label="Learn more">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+                    <!-- Billing Period Options -->
+                    <div class="w-full lg:flex-1 flex flex-wrap items-stretch gap-2 sm:gap-1 sm:flex sm:rounded-lg sm:border sm:border-ctct-border sm:p-1 bg-ctct-light sm:bg-white">
+                        <!-- Monthly (Disabled - can't downgrade from prepay) -->
+                        <label class="billing-option flex-1 flex opacity-60">
+                            <input type="radio" name="billing" value="monthly" class="sr-only" disabled>
+                            <span class="flex flex-col justify-center w-full px-4 sm:px-6 py-3 rounded-lg sm:rounded-md text-center cursor-not-allowed border-2 border-transparent bg-ctct-light transition-all">
+                                <span class="block text-sm font-medium text-ctct-gray">Monthly</span>
+                            </span>
+                        </label>
+                        
+                        <!-- Prepay 6 months (Disabled - can't downgrade from 12 months) -->
+                        <label class="billing-option flex-1 flex opacity-60">
+                            <input type="radio" name="billing" value="6months" class="sr-only" disabled>
+                            <span class="flex flex-col justify-center w-full px-4 sm:px-6 py-3 rounded-lg sm:rounded-md text-center cursor-not-allowed border-2 border-transparent bg-ctct-light transition-all">
+                                <span class="block text-sm font-medium text-ctct-gray">Prepay 6 months</span>
+                                <span class="block text-xs text-ctct-gray font-medium">SAVE 10%</span>
+                            </span>
+                        </label>
+                        
+                        <!-- Prepay 12 months (Selected) -->
+                        <label class="billing-option flex-1 flex">
+                            <input type="radio" name="billing" value="12months" class="sr-only" checked>
+                            <span class="flex flex-col justify-center w-full px-4 sm:px-6 py-3 rounded-lg sm:rounded-md text-center cursor-pointer border-2 border-ctct-border sm:border-transparent bg-white sm:bg-transparent transition-all">
+                                <span class="block text-sm font-medium text-gray-900">Prepay 12 months</span>
+                                <span class="block text-xs text-green-600 font-medium">SAVE 15%</span>
+                                <span class="block text-xs text-ctct-gray">Current</span>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- Nonprofit Toggle -->
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <span class="text-sm text-gray-700">Nonprofit?</span>
+                        <button type="button" role="switch" aria-checked="false" class="nonprofit-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ctct-blue focus:ring-offset-2">
+                            <span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Shorter payment terms message -->
+                <p class="text-sm text-ctct-gray mt-4">Shorter payment terms are available starting 30 days before your renewal date.</p>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="flex flex-col lg:flex-row gap-6 lg:items-stretch">
+                
+                <!-- Left Column - Payment & Billing -->
+                <div class="flex-1 flex flex-col gap-6">
+                    
+                    <!-- Payment Method -->
+                    <div class="bg-white rounded-xl p-6 border border-ctct-border">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment method</h3>
+                        
+                        <!-- Payment Options -->
+                        <div class="flex gap-2 mb-4">
+                            <label class="payment-option flex-1">
+                                <input type="radio" name="payment" value="card" class="sr-only" checked>
+                                <label class="block p-3 border-2 border-ctct-blue bg-ctct-light rounded-lg cursor-pointer">
+                                    <svg class="w-5 h-5 text-ctct-blue mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    <span class="text-sm font-medium text-ctct-blue">Card</span>
+                                </label>
+                            </label>
+                            
+                            <label class="payment-option flex-1">
+                                <input type="radio" name="payment" value="paypal" class="sr-only">
+                                <label class="block p-3 border border-ctct-border rounded-lg cursor-pointer hover:border-ctct-blue transition-colors">
+                                    <svg class="w-5 h-5 text-gray-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    <span class="text-sm text-gray-700">Paypal</span>
+                                </label>
+                            </label>
+                            
+                            <label class="payment-option flex-1">
+                                <input type="radio" name="payment" value="bank" class="sr-only">
+                                <label class="block p-3 border border-ctct-border rounded-lg cursor-pointer hover:border-ctct-blue transition-colors">
+                                    <svg class="w-5 h-5 text-gray-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    <span class="text-sm text-gray-700">Us bank account</span>
+                                </label>
+                            </label>
+                            
+                            <button class="p-3 border border-ctct-border rounded-lg hover:border-ctct-blue transition-colors">
+                                <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="6" cy="12" r="2"/>
+                                    <circle cx="12" cy="12" r="2"/>
+                                    <circle cx="18" cy="12" r="2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Edit Link -->
+                        <div class="text-right mb-4">
+                            <a href="#" class="text-sm text-ctct-blue hover:text-ctct-blue-dark font-medium">Edit</a>
+                        </div>
+                        
+                        <!-- Saved Card -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">American Express ending in **** ******** *<span class="font-semibold">8431</span></p>
+                                <p class="text-sm text-ctct-gray">Expires 10/2029</p>
+                            </div>
+                            <div class="bg-[#006FCF] text-white text-xs font-bold px-2 py-1 rounded">AMEX</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Billing Information -->
+                    <div class="bg-white rounded-xl p-6 border border-ctct-border flex-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Billing information</h3>
+                            <a href="#" class="text-sm text-ctct-blue hover:text-ctct-blue-dark font-medium">Edit</a>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Address -->
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 mb-1">Address:</p>
+                                <p class="text-sm text-gray-900">Alexander Christopher</p>
+                                <p class="text-sm text-gray-900">Alphabet Inc.</p>
+                                <p class="text-sm text-gray-900">1600 Amphitheatre Parkway</p>
+                                <p class="text-sm text-gray-900">Mountain View, CA</p>
+                                <p class="text-sm text-gray-900">94043</p>
+                                <p class="text-sm text-gray-900">United States</p>
+                            </div>
+                            
+                            <!-- Phone & Email -->
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 mb-1">Phone number:</p>
+                                <p class="text-sm text-gray-900 mb-4">737 888 1234</p>
+                                
+                                <p class="text-sm font-medium text-gray-700 mb-1">Billing email:</p>
+                                <p class="text-sm text-gray-900 break-all">alexander.christopher@billingaddress.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Right Column - Order Summary -->
+                <div class="lg:w-96 flex-shrink-0">
+                    <div class="bg-white rounded-xl p-6 border border-ctct-border">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order summary</h3>
+                        
+                        <!-- Plan Charge -->
+                        <div class="mb-4 pb-4 border-b border-ctct-border">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-semibold text-gray-900">Prorated plan charge</span>
+                                <span class="text-sm font-semibold text-gray-900">$816.00</span>
+                            </div>
+                            <p class="text-xs text-ctct-gray">Premium (Contacts 500 - 1,000)</p>
+                            <p class="text-xs text-ctct-gray">Prepay 12 months ($68/mo × 12 mo)</p>
+                            <div class="flex justify-between mt-1">
+                                <a href="#" class="text-xs text-green-600 hover:underline">Prepay savings 15% discount</a>
+                                <span class="text-xs text-green-600">-$122.40</span>
+                            </div>
+                            <a href="plan-selection-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit plan</a>
+                        </div>
+                        
+                        <!-- SMS Add-on -->
+                        <div class="mb-4 pb-4 border-b border-ctct-border">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-semibold text-gray-900">501–1,000 SMS/mo</span>
+                                <span class="text-sm font-semibold text-gray-900">$102.00</span>
+                            </div>
+                            <p class="text-xs text-ctct-gray">Prepay 12 months ($8.5/mo × 12 mo)</p>
+                            <div class="flex justify-between mt-1">
+                                <a href="#" class="text-xs text-green-600 hover:underline">Prepay savings 15% discount</a>
+                                <span class="text-xs text-green-600">-$15.30</span>
+                            </div>
+                            <a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+                        </div>
+                        
+                        <!-- Discount Code -->
+                        <div class="mb-4 pb-4 border-b border-ctct-border">
+                            <p class="text-sm text-gray-700 mb-2">Have a discount code?</p>
+                            <div class="flex gap-2">
+                                <input type="text" placeholder="Discount code" class="flex-1 px-3 py-2 border border-ctct-border rounded-lg text-sm focus:outline-none focus:border-ctct-blue">
+                                <button class="px-4 py-2 border border-ctct-border rounded-lg text-sm text-ctct-gray hover:border-ctct-blue hover:text-ctct-blue transition-colors">
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Totals -->
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-700">Subtotal before tax</span>
+                                <span class="text-sm text-gray-900">$908.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-green-600 font-medium">Total savings</span>
+                                <span class="text-sm text-green-600 font-medium">–$137.70</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-700">Tax</span>
+                                <span class="text-sm text-gray-900">$ 9.08</span>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t border-ctct-border">
+                                <span class="text-sm font-semibold text-gray-900">Today's total</span>
+                                <span class="text-sm font-semibold text-gray-900">$779.38</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Legal Text -->
+                        <div class="text-xs text-ctct-gray mb-4 space-y-3">
+                            <p>
+                                Auto renewal terms: All subscriptions automatically renew monthly, at the then current list price (plus applicable taxes), after your 14 day Free Trial, using the payment method on file, unless cancelled prior to your next bill date. Your monthly bill may increase depending on your highest contact list size and email and SMS sends. Overage Fees may apply. <a href="#" class="text-ctct-blue hover:underline">See overage fees & current contact tier pricing</a>. You may cancel at any time from your account or by calling 855-229-5506.
+                            </p>
+                            <p>
+                                By submitting your payment you acknowledge that you have read and agree to our prepayment terms, the <a href="#" class="text-ctct-blue hover:underline">Terms of Service</a> and <a href="#" class="text-ctct-blue hover:underline">Privacy Notice</a>.
+                            </p>
+                        </div>
+                        
+                        <!-- Pay Button -->
+                        <button id="pay-button" class="w-full py-3 px-4 rounded-full bg-ctct-orange text-gray-900 font-semibold hover:bg-orange-500 transition-colors flex items-center justify-center gap-2 mb-4">
+                            <svg id="lock-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            <span id="pay-button-text">Pay 779.38 now</span>
+                        </button>
+                        
+                        <!-- Payment Icons -->
+                        <div class="flex items-center justify-center">
+                            <img src="payment-icons.png" alt="Visa, Mastercard, American Express, Discover, PayPal" class="h-4 w-auto">
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </main>
+    <!-- JavaScript for Interactivity -->
+    <script>
+        // Nonprofit toggle
+        document.querySelector('.nonprofit-toggle')?.addEventListener('click', function() {
+            const isChecked = this.getAttribute('aria-checked') === 'true';
+            this.setAttribute('aria-checked', !isChecked);
+            
+            const toggle = this.querySelector('span');
+            if (!isChecked) {
+                this.classList.remove('bg-gray-200');
+                this.classList.add('bg-ctct-blue');
+                toggle.classList.remove('translate-x-0');
+                toggle.classList.add('translate-x-5');
+            } else {
+                this.classList.remove('bg-ctct-blue');
+                this.classList.add('bg-gray-200');
+                toggle.classList.remove('translate-x-5');
+                toggle.classList.add('translate-x-0');
+            }
+        });
+
+        // Payment method selection
+        document.querySelectorAll('.payment-option input').forEach(radio => {
+            radio.addEventListener('change', function() {
+                console.log('Selected payment method:', this.value);
+            });
+        });
+
+        // Pay button handler with loading state
+        document.getElementById('pay-button')?.addEventListener('click', function() {
+            const button = this;
+            const lockIcon = document.getElementById('lock-icon');
+            const buttonText = document.getElementById('pay-button-text');
+            
+            // Disable button and show loading state
+            button.disabled = true;
+            button.classList.add('cursor-not-allowed', 'opacity-90');
+            
+            // Replace lock icon with spinner
+            lockIcon.outerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>`;
+            
+            // Change button text
+            buttonText.textContent = 'Processing...';
+            
+            console.log('Processing payment...');
+            
+            // After 2 seconds, navigate to confirmation page
+            setTimeout(function() {
+                window.location.href = 'confirmation-renewal.html';
+            }, 2000);
+        });
+
+        // Progress stepper navigation
+        document.getElementById('step-select-plan')?.addEventListener('click', function() {
+            window.location.href = 'plan-selection-renewal.html';
+        });
+
+        document.getElementById('step-addons')?.addEventListener('click', function() {
+            window.location.href = 'addons-renewal.html';
+        });
+    </script>
+</body>
+</html>
