@@ -474,7 +474,7 @@
             const isFree = config.monthlyPrice === 0;
             
             let html = `
-                <div class="mb-4 pb-4 border-b border-ctct-border addon-item" data-addon="${config.id}">
+                <div class="mb-4 pb-4 border-b border-ctct-border addon-item" data-addon="${config.id}" data-addon-name="${addonName}">
                     <div class="flex justify-between mb-1">
                         <span class="text-sm font-semibold text-gray-900">${config.displayName || addonName}</span>
                         <span class="text-sm font-semibold text-gray-900">${isFree ? 'Free' : formatCurrency(pricing.basePrice)}</span>
@@ -496,11 +496,38 @@
                 html += `<p class="text-xs text-ctct-gray">${config.description}</p>`;
             }
             
-            html += `<a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+            html += `<div class="flex gap-3 mt-1">
+                    <a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+                    <a href="#" class="text-xs text-ctct-blue hover:underline remove-addon-link" data-addon-name="${addonName}">Remove</a>
+                </div>
                 </div>
             `;
             
             return html;
+        }
+        
+        // Remove add-on handler
+        function removeAddon(addonName) {
+            const selectedAddons = getSelectedAddons();
+            delete selectedAddons[addonName];
+            localStorage.setItem('selectedAddons', JSON.stringify(selectedAddons));
+            console.log('Removed addon:', addonName);
+            
+            // Re-render the order summary
+            initializeOrderSummary();
+        }
+        
+        // Attach remove handlers after rendering
+        function attachRemoveHandlers() {
+            document.querySelectorAll('.remove-addon-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const addonName = this.getAttribute('data-addon-name');
+                    if (addonName) {
+                        removeAddon(addonName);
+                    }
+                });
+            });
         }
 
         // Render all add-ons
@@ -528,6 +555,9 @@
             
             console.log('Generated HTML for addons:', html.length > 0 ? 'Has content' : 'Empty');
             container.innerHTML = html;
+            
+            // Attach click handlers for remove links
+            attachRemoveHandlers();
         }
 
         // Update plan section based on billing term

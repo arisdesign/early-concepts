@@ -399,6 +399,35 @@
             '12months': { months: 12, discount: 0.15, label: 'Prepay 12 months', savingsLabel: 'Prepay savings 15% discount' }
         };
         
+        // Function to remove an add-on
+        function removeAddon(addonName) {
+            const addonsJson = localStorage.getItem('selectedAddons');
+            let addons = addonsJson ? JSON.parse(addonsJson) : [];
+            
+            // Filter out the addon with the matching name
+            addons = addons.filter(addon => addon.name !== addonName);
+            
+            // Save back to localStorage
+            localStorage.setItem('selectedAddons', JSON.stringify(addons));
+            console.log('Removed addon:', addonName);
+            
+            // Re-render the order summary
+            renderOrderSummary();
+        }
+        
+        // Function to attach remove handlers
+        function attachRemoveHandlers() {
+            document.querySelectorAll('.remove-addon-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const addonName = this.getAttribute('data-addon-name');
+                    if (addonName) {
+                        removeAddon(addonName);
+                    }
+                });
+            });
+        }
+        
         // Function to render order summary
         function renderOrderSummary() {
             const billing = localStorage.getItem('selectedBilling') || '12months';
@@ -446,7 +475,7 @@
             let totalAddonsSubtotal = 0;
             let totalAddonsDiscount = 0;
             
-            addons.forEach(addon => {
+            addons.forEach((addon, index) => {
                 if (addon.price > 0) { // Skip free add-ons
                     const addonSubtotal = addon.price * billingInfo.months;
                     const addonDiscount = addonSubtotal * billingInfo.discount;
@@ -465,14 +494,32 @@
                     }
                     
                     addonsHtml += `
-                        <div class="mb-4 pb-4 border-b border-ctct-border">
+                        <div class="mb-4 pb-4 border-b border-ctct-border addon-item" data-addon-index="${index}">
                             <div class="flex justify-between mb-1">
-                                <span class="text-sm font-semibold text-gray-900">${addon.name}</span>
+                                <span class="text-sm font-semibold text-gray-900">${addon.tier || addon.name}</span>
                                 <span class="text-sm font-semibold text-gray-900">$${addonTotal.toFixed(2)}</span>
                             </div>
                             <p class="text-xs text-ctct-gray">${billingInfo.label} ($${addon.price}/mo × ${billingInfo.months} mo)</p>
                             ${addonDiscountHtml}
-                            <a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+                            <div class="flex gap-3 mt-1">
+                                <a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+                                <a href="#" class="text-xs text-ctct-blue hover:underline remove-addon-link" data-addon-name="${addon.name}">Remove</a>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Free add-ons
+                    addonsHtml += `
+                        <div class="mb-4 pb-4 border-b border-ctct-border addon-item" data-addon-index="${index}">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-semibold text-gray-900">${addon.tier || addon.name}</span>
+                                <span class="text-sm font-semibold text-gray-900">Free</span>
+                            </div>
+                            <p class="text-xs text-ctct-gray">${addon.tier}</p>
+                            <div class="flex gap-3 mt-1">
+                                <a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+                                <a href="#" class="text-xs text-ctct-blue hover:underline remove-addon-link" data-addon-name="${addon.name}">Remove</a>
+                            </div>
                         </div>
                     `;
                 }
@@ -480,6 +527,9 @@
             
             // Show add-ons if selected, otherwise leave empty for more space
             addonsSummary.innerHTML = addonsHtml;
+            
+            // Attach remove handlers after rendering
+            attachRemoveHandlers();
             
             // Calculate totals
             const subtotal = planSubtotal + totalAddonsSubtotal;
