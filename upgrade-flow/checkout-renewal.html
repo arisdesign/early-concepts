@@ -409,13 +409,31 @@
         // Get add-ons config from localStorage or use default
         function getAddonsConfig() {
             const stored = localStorage.getItem('addonsConfig');
-            return stored ? JSON.parse(stored) : defaultAddonsConfig;
+            console.log('Retrieved addonsConfig from localStorage:', stored);
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    console.error('Error parsing addonsConfig:', e);
+                    return defaultAddonsConfig;
+                }
+            }
+            return defaultAddonsConfig;
         }
 
         // Get selected add-ons from localStorage
         function getSelectedAddons() {
             const stored = localStorage.getItem('selectedAddons');
-            return stored ? JSON.parse(stored) : { 'SMS Marketing': true };
+            console.log('Retrieved selectedAddons from localStorage:', stored);
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    console.error('Error parsing selectedAddons:', e);
+                    return { 'SMS Marketing': true };
+                }
+            }
+            return { 'SMS Marketing': true };
         }
 
         // Format currency
@@ -488,18 +506,27 @@
         // Render all add-ons
         function renderAddons() {
             const container = document.getElementById('addons-container');
+            if (!container) {
+                console.error('addons-container not found!');
+                return;
+            }
+            
             const selectedAddons = getSelectedAddons();
             const addonsConfig = getAddonsConfig();
             const billingTerm = getSelectedBillingTerm();
             
+            console.log('Rendering addons:', { selectedAddons, addonsConfig, billingTerm });
+            
             let html = '';
             
             for (const [addonName, isSelected] of Object.entries(selectedAddons)) {
+                console.log('Processing addon:', addonName, 'isSelected:', isSelected, 'hasConfig:', !!addonsConfig[addonName]);
                 if (isSelected && addonsConfig[addonName]) {
                     html += renderAddonItem(addonName, addonsConfig[addonName], billingTerm);
                 }
             }
             
+            console.log('Generated HTML for addons:', html.length > 0 ? 'Has content' : 'Empty');
             container.innerHTML = html;
         }
 
