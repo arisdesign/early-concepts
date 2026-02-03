@@ -301,9 +301,10 @@
         localStorage.setItem('addonsConfig', JSON.stringify(addonsConfig));
 
         // Initialize selected addons from localStorage or default
-        let selectedAddons = JSON.parse(localStorage.getItem('selectedAddons')) || {
-            'SMS Marketing': true  // SMS is pre-added (already purchased)
-        };
+        let selectedAddons = JSON.parse(localStorage.getItem('selectedAddons')) || {};
+        
+        // SMS Marketing is always pre-added (already purchased) - ensure it's always included
+        selectedAddons['SMS Marketing'] = true;
 
         // Checkmark SVG for selected state
         const checkmarkSvg = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
