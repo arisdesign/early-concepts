@@ -274,32 +274,23 @@
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Order summary</h3>
                         
                         <!-- Plan Charge -->
-                        <div class="mb-4 pb-4 border-b border-ctct-border">
+                        <div class="mb-4 pb-4 border-b border-ctct-border" id="plan-charge-section">
                             <div class="flex justify-between mb-1">
                                 <span class="text-sm font-semibold text-gray-900">Prorated plan charge</span>
-                                <span class="text-sm font-semibold text-gray-900">$816.00</span>
+                                <span class="text-sm font-semibold text-gray-900" id="plan-total">$816.00</span>
                             </div>
                             <p class="text-xs text-ctct-gray">Premium (Contacts 500 - 1,000)</p>
-                            <p class="text-xs text-ctct-gray">Prepay 12 months ($68/mo × 12 mo)</p>
-                            <div class="flex justify-between mt-1">
-                                <a href="#" class="text-xs text-green-600 hover:underline">Prepay savings 15% discount</a>
-                                <span class="text-xs text-green-600">-$122.40</span>
+                            <p class="text-xs text-ctct-gray" id="plan-term-detail">Prepay 12 months ($68/mo × 12 mo)</p>
+                            <div class="flex justify-between mt-1" id="plan-discount-row">
+                                <a href="#" class="text-xs text-green-600 hover:underline">Prepay savings <span id="plan-discount-percent">15%</span> discount</a>
+                                <span class="text-xs text-green-600" id="plan-discount-amount">-$122.40</span>
                             </div>
                             <a href="plan-selection-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit plan</a>
                         </div>
                         
-                        <!-- SMS Add-on -->
-                        <div class="mb-4 pb-4 border-b border-ctct-border">
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-semibold text-gray-900">501–1,000 SMS/mo</span>
-                                <span class="text-sm font-semibold text-gray-900">$102.00</span>
-                            </div>
-                            <p class="text-xs text-ctct-gray">Prepay 12 months ($8.5/mo × 12 mo)</p>
-                            <div class="flex justify-between mt-1">
-                                <a href="#" class="text-xs text-green-600 hover:underline">Prepay savings 15% discount</a>
-                                <span class="text-xs text-green-600">-$15.30</span>
-                            </div>
-                            <a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+                        <!-- Dynamic Add-ons Container -->
+                        <div id="addons-container">
+                            <!-- Add-ons will be dynamically inserted here -->
                         </div>
                         
                         <!-- Discount Code -->
@@ -317,19 +308,19 @@
                         <div class="space-y-2 mb-4">
                             <div class="flex justify-between">
                                 <span class="text-sm text-gray-700">Subtotal before tax</span>
-                                <span class="text-sm text-gray-900">$908.00</span>
+                                <span class="text-sm text-gray-900" id="subtotal-amount">$908.00</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-sm text-green-600 font-medium">Total savings</span>
-                                <span class="text-sm text-green-600 font-medium">–$137.70</span>
+                                <span class="text-sm text-green-600 font-medium" id="total-savings">–$137.70</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-sm text-gray-700">Tax</span>
-                                <span class="text-sm text-gray-900">$ 9.08</span>
+                                <span class="text-sm text-gray-900" id="tax-amount">$ 9.08</span>
                             </div>
                             <div class="flex justify-between pt-2 border-t border-ctct-border">
                                 <span class="text-sm font-semibold text-gray-900">Today's total</span>
-                                <span class="text-sm font-semibold text-gray-900">$779.38</span>
+                                <span class="text-sm font-semibold text-gray-900" id="today-total">$779.38</span>
                             </div>
                         </div>
                         
@@ -364,6 +355,220 @@
     </main>
     <!-- JavaScript for Interactivity -->
     <script>
+        // ============================================
+        // Add-on Configuration and Pricing
+        // ============================================
+        
+        // Default add-on configuration (will be overridden by localStorage if available)
+        const defaultAddonsConfig = {
+            'SMS Marketing': {
+                id: 'sms',
+                monthlyPrice: 10,
+                description: '0 – 500 SMS/month',
+                displayName: '0 – 500 SMS/mo',
+                unit: 'SMS/mo'
+            },
+            'Inbox Preview': {
+                id: 'inbox-preview',
+                monthlyPrice: 45,
+                description: '25 previews/month',
+                displayName: '25 previews/mo',
+                unit: 'previews/mo'
+            },
+            'Xero Accounting': {
+                id: 'xero',
+                monthlyPrice: 0,
+                description: '6 months free',
+                displayName: 'Xero Accounting',
+                unit: ''
+            }
+        };
+
+        // Billing term configuration
+        const billingTerms = {
+            'monthly': { months: 1, discount: 0, label: 'Monthly' },
+            '6months': { months: 6, discount: 0.10, label: 'Prepay 6 months' },
+            '12months': { months: 12, discount: 0.15, label: 'Prepay 12 months' }
+        };
+
+        // Plan base pricing
+        const planConfig = {
+            monthlyPrice: 68,
+            name: 'Premium (Contacts 500 - 1,000)'
+        };
+
+        // Tax rate (1% for demo)
+        const TAX_RATE = 0.01;
+
+        // Get selected billing term
+        function getSelectedBillingTerm() {
+            const selected = document.querySelector('input[name="billing"]:checked');
+            return selected ? selected.value : '12months';
+        }
+
+        // Get add-ons config from localStorage or use default
+        function getAddonsConfig() {
+            const stored = localStorage.getItem('addonsConfig');
+            return stored ? JSON.parse(stored) : defaultAddonsConfig;
+        }
+
+        // Get selected add-ons from localStorage
+        function getSelectedAddons() {
+            const stored = localStorage.getItem('selectedAddons');
+            return stored ? JSON.parse(stored) : { 'SMS Marketing': true };
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return '$' + amount.toFixed(2);
+        }
+
+        // Calculate add-on price based on billing term
+        function calculateAddonPrice(monthlyPrice, billingTerm) {
+            const term = billingTerms[billingTerm];
+            const basePrice = monthlyPrice * term.months;
+            const discount = basePrice * term.discount;
+            return {
+                basePrice: basePrice,
+                discount: discount,
+                finalPrice: basePrice - discount
+            };
+        }
+
+        // Calculate plan price based on billing term
+        function calculatePlanPrice(billingTerm) {
+            const term = billingTerms[billingTerm];
+            const basePrice = planConfig.monthlyPrice * term.months;
+            const discount = basePrice * term.discount;
+            return {
+                basePrice: basePrice,
+                discount: discount,
+                finalPrice: basePrice - discount
+            };
+        }
+
+        // Render single add-on item
+        function renderAddonItem(addonName, config, billingTerm) {
+            const term = billingTerms[billingTerm];
+            const pricing = calculateAddonPrice(config.monthlyPrice, billingTerm);
+            
+            // Skip free add-ons in the price display (but show them)
+            const isFree = config.monthlyPrice === 0;
+            
+            let html = `
+                <div class="mb-4 pb-4 border-b border-ctct-border addon-item" data-addon="${config.id}">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm font-semibold text-gray-900">${config.displayName || addonName}</span>
+                        <span class="text-sm font-semibold text-gray-900">${isFree ? 'Free' : formatCurrency(pricing.basePrice)}</span>
+                    </div>
+            `;
+            
+            if (!isFree) {
+                html += `<p class="text-xs text-ctct-gray">${term.label} ($${config.monthlyPrice}/mo × ${term.months} mo)</p>`;
+                
+                if (pricing.discount > 0) {
+                    html += `
+                        <div class="flex justify-between mt-1">
+                            <a href="#" class="text-xs text-green-600 hover:underline">Prepay savings ${Math.round(term.discount * 100)}% discount</a>
+                            <span class="text-xs text-green-600">-${formatCurrency(pricing.discount)}</span>
+                        </div>
+                    `;
+                }
+            } else {
+                html += `<p class="text-xs text-ctct-gray">${config.description}</p>`;
+            }
+            
+            html += `<a href="addons-renewal.html" class="text-xs text-ctct-blue hover:underline">Edit add-on</a>
+                </div>
+            `;
+            
+            return html;
+        }
+
+        // Render all add-ons
+        function renderAddons() {
+            const container = document.getElementById('addons-container');
+            const selectedAddons = getSelectedAddons();
+            const addonsConfig = getAddonsConfig();
+            const billingTerm = getSelectedBillingTerm();
+            
+            let html = '';
+            
+            for (const [addonName, isSelected] of Object.entries(selectedAddons)) {
+                if (isSelected && addonsConfig[addonName]) {
+                    html += renderAddonItem(addonName, addonsConfig[addonName], billingTerm);
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Update plan section based on billing term
+        function updatePlanSection() {
+            const billingTerm = getSelectedBillingTerm();
+            const term = billingTerms[billingTerm];
+            const pricing = calculatePlanPrice(billingTerm);
+            
+            document.getElementById('plan-total').textContent = formatCurrency(pricing.basePrice);
+            document.getElementById('plan-term-detail').textContent = 
+                `${term.label} ($${planConfig.monthlyPrice}/mo × ${term.months} mo)`;
+            
+            const discountRow = document.getElementById('plan-discount-row');
+            if (pricing.discount > 0) {
+                discountRow.style.display = 'flex';
+                document.getElementById('plan-discount-percent').textContent = Math.round(term.discount * 100) + '%';
+                document.getElementById('plan-discount-amount').textContent = '-' + formatCurrency(pricing.discount);
+            } else {
+                discountRow.style.display = 'none';
+            }
+        }
+
+        // Calculate and update totals
+        function updateTotals() {
+            const selectedAddons = getSelectedAddons();
+            const addonsConfig = getAddonsConfig();
+            const billingTerm = getSelectedBillingTerm();
+            
+            // Calculate plan totals
+            const planPricing = calculatePlanPrice(billingTerm);
+            let subtotal = planPricing.basePrice;
+            let totalDiscount = planPricing.discount;
+            
+            // Calculate add-ons totals
+            for (const [addonName, isSelected] of Object.entries(selectedAddons)) {
+                if (isSelected && addonsConfig[addonName]) {
+                    const config = addonsConfig[addonName];
+                    const pricing = calculateAddonPrice(config.monthlyPrice, billingTerm);
+                    subtotal += pricing.basePrice;
+                    totalDiscount += pricing.discount;
+                }
+            }
+            
+            const afterDiscount = subtotal - totalDiscount;
+            const tax = afterDiscount * TAX_RATE;
+            const total = afterDiscount + tax;
+            
+            // Update DOM
+            document.getElementById('subtotal-amount').textContent = formatCurrency(subtotal);
+            document.getElementById('total-savings').textContent = totalDiscount > 0 ? '–' + formatCurrency(totalDiscount) : '$0.00';
+            document.getElementById('tax-amount').textContent = formatCurrency(tax);
+            document.getElementById('today-total').textContent = formatCurrency(total);
+            
+            // Update pay button
+            document.getElementById('pay-button-text').textContent = `Pay ${formatCurrency(total)} now`;
+        }
+
+        // Initialize the order summary
+        function initializeOrderSummary() {
+            updatePlanSection();
+            renderAddons();
+            updateTotals();
+        }
+
+        // ============================================
+        // Event Handlers
+        // ============================================
+
         // Nonprofit toggle
         document.querySelector('.nonprofit-toggle')?.addEventListener('click', function() {
             const isChecked = this.getAttribute('aria-checked') === 'true';
@@ -381,6 +586,14 @@
                 toggle.classList.remove('translate-x-5');
                 toggle.classList.add('translate-x-0');
             }
+        });
+
+        // Billing term change - recalculate everything
+        document.querySelectorAll('input[name="billing"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                console.log('Billing term changed to:', this.value);
+                initializeOrderSummary();
+            });
         });
 
         // Payment method selection
@@ -425,6 +638,16 @@
         document.getElementById('step-addons')?.addEventListener('click', function() {
             window.location.href = 'addons-renewal.html';
         });
+
+        // ============================================
+        // Initialize on page load
+        // ============================================
+        document.addEventListener('DOMContentLoaded', initializeOrderSummary);
+        
+        // Also initialize immediately in case DOM is already ready
+        if (document.readyState !== 'loading') {
+            initializeOrderSummary();
+        }
     </script>
 </body>
 </html>
